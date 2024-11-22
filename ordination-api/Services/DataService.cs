@@ -132,8 +132,28 @@ public class DataService
 
     public PN OpretPN(int patientId, int laegemiddelId, double antal, DateTime startDato, DateTime slutDato) {
         // TODO: Implement!
+
+        if (antal < 0)
+        {
+            throw new ArgumentException("Enhed kan ikke være negativ.");
+        }
+        if (antal == 0 )
+        {
+            throw new ArgumentException("Enhed skal være angivet");
+        }
+
         var patient = db.Patienter.Include(p => p.ordinationer).FirstOrDefault(p => p.PatientId == patientId);
         var laegemiddel = db.Laegemiddler.FirstOrDefault(l => l.LaegemiddelId == laegemiddelId);
+
+
+        double anbefaletDosis = GetAnbefaletDosisPerDøgn(patientId, laegemiddelId);
+
+
+        if (antal > anbefaletDosis)
+        {
+            throw new ArgumentException("Enhed har overskrevet anbefalet dosis");
+        }
+
 
         var pn = new PN
         {
@@ -214,8 +234,8 @@ public class DataService
         }
 
             db.SaveChanges();
-        return $"Ordination with ID {id} was successfully marked as used on {dato}.";
-    
+
+        return $"Ordination with ID {id} was successfully marked as used on {dato}.";   
 }
 
     /// <summary>
@@ -227,7 +247,22 @@ public class DataService
     /// <returns></returns>
 	public double GetAnbefaletDosisPerDøgn(int patientId, int laegemiddelId) {
         // TODO: Implement!
-        return -1;
-	}
-    
+            var patient = db.Patienter.FirstOrDefault(p => p.PatientId == patientId);
+            var laegemiddel = db.Laegemiddler.FirstOrDefault(l => l.LaegemiddelId == laegemiddelId);
+
+            // Calculate 
+            if (patient.vaegt < 25)
+            {
+                return patient.vaegt * laegemiddel.enhedPrKgPrDoegnLet;
+            }
+            else if (patient.vaegt <= 120)
+            {
+                return patient.vaegt * laegemiddel.enhedPrKgPrDoegnNormal;
+            }
+            else
+            {
+                return patient.vaegt * laegemiddel.enhedPrKgPrDoegnTung;
+            }
+        }
+
 }
