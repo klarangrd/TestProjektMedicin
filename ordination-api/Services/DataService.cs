@@ -189,8 +189,34 @@ public class DataService
 
     public string AnvendOrdination(int id, Dato dato) {
         // TODO: Implement!
-        return null!;
-    }
+        var ordination = db.Ordinationer
+         .Include(o => (o as PN)!.dates)
+        .FirstOrDefault(o => o.OrdinationId == id);
+
+        if (ordination == null)
+        {
+            return $"Ordination with ID {id} does not exist.";
+        }
+
+        // Check if the date is within the valid range
+        if (dato.dato < ordination.startDen || dato.dato > ordination.slutDen)
+        {
+            return $"Date {dato} is outside the valid period for this ordination.";
+        }
+
+        if (ordination is PN pn)
+        {
+            if (pn.dates == null)
+            {
+                pn.dates = new List<Dato>();
+            }
+            pn.dates.Add(dato);
+        }
+
+            db.SaveChanges();
+        return $"Ordination with ID {id} was successfully marked as used on {dato}.";
+    
+}
 
     /// <summary>
     /// Den anbefalede dosis for den pågældende patient, per døgn, hvor der skal tages hensyn til
