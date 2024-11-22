@@ -8,7 +8,7 @@ namespace Data
         public DbSet<Patient> Patienter => Set<Patient>();
         public DbSet<PN> PNs => Set<PN>();
         public DbSet<DagligFast> DagligFaste => Set<DagligFast>();
-        public DbSet<DagligSkaev> DagligSkaeve => Set<DagligSkaev>();
+        public DbSet<DagligSkæv> DagligSkaeve => Set<DagligSkæv>();
         public DbSet<Laegemiddel> Laegemiddler => Set<Laegemiddel>();
         public DbSet<Ordination> Ordinationer => Set<Ordination>();
 

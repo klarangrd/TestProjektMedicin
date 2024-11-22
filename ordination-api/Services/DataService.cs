@@ -70,9 +70,9 @@ public class DataService
             ordinationer[2] = new PN(new DateTime(2024, 11, 20), new DateTime(2024, 11, 25), 5, lm[2]);    
             ordinationer[3] = new PN(new DateTime(2024, 11, 1), new DateTime(2024, 11, 12), 123, lm[1]);
             ordinationer[4] = new DagligFast(new DateTime(2024, 11, 10), new DateTime(2024, 11, 12), lm[1], 2, 0, 1, 0);
-            ordinationer[5] = new DagligSkaev(new DateTime(2024, 11, 23), new DateTime(2024, 11, 24), lm[2]);
+            ordinationer[5] = new DagligSkæv(new DateTime(2024, 11, 23), new DateTime(2024, 11, 24), lm[2]);
             
-            ((DagligSkaev) ordinationer[5]).doser = new Dosis[] { 
+            ((DagligSkæv) ordinationer[5]).doser = new Dosis[] { 
                 new Dosis(CreateTimeOnly(12, 0, 0), 0.5),
                 new Dosis(CreateTimeOnly(12, 40, 0), 1),
                 new Dosis(CreateTimeOnly(16, 0, 0), 2.5),
@@ -115,7 +115,7 @@ public class DataService
             .ToList();
     }
 
-    public List<DagligSkaev> GetDagligSkæve() {
+    public List<DagligSkæv> GetDagligSkæve() {
         return db.DagligSkaeve
             .Include(o => o.laegemiddel)
             .Include(o => o.doser)
@@ -170,21 +170,21 @@ public class DataService
         return dagligFast;
     }
 
-    public DagligSkaev OpretDagligSkaev(int patientId, int laegemiddelId, Dosis[] doser, DateTime startDato, DateTime slutDato) {
+    public DagligSkæv OpretDagligSkaev(int patientId, int laegemiddelId, Dosis[] doser, DateTime startDato, DateTime slutDato) {
         // TODO: Implement!
         var patient = db.Patienter.Include(p => p.ordinationer).FirstOrDefault(p => p.PatientId == patientId);
         var laegemiddel = db.Laegemiddler.FirstOrDefault(l => l.LaegemiddelId == laegemiddelId);
 
-        var dagligSkaev = new DagligSkaev(startDato, slutDato, laegemiddel, doser);
+        var dagligSkæv = new DagligSkæv(startDato, slutDato, laegemiddel, doser);
                
 
-        patient.ordinationer.Add(dagligSkaev);
+        patient.ordinationer.Add(dagligSkæv);
 
-        db.DagligSkaeve.Add(dagligSkaev);
+        db.DagligSkaeve.Add(dagligSkæv);
         db.SaveChanges();
 
 
-        return dagligSkaev;
+        return dagligSkæv;
     }
 
     public string AnvendOrdination(int id, Dato dato) {
