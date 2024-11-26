@@ -133,6 +133,7 @@ public class DataService
     public PN OpretPN(int patientId, int laegemiddelId, double antal, DateTime startDato, DateTime slutDato) {
         // TODO: Implement!
 
+        //exception to check whether the antal is within the accepted range
         if (antal < 0)
         {
             throw new ArgumentException("Enhed kan ikke være negativ.");
@@ -148,7 +149,7 @@ public class DataService
 
         double anbefaletDosis = GetAnbefaletDosisPerDøgn(patientId, laegemiddelId);
 
-
+        //exception to check whether the antal is within the anbefaletdosis
         if (antal > anbefaletDosis)
         {
             throw new ArgumentException("Enhed har overskrevet anbefalet dosis");
@@ -213,12 +214,13 @@ public class DataService
          .Include(o => (o as PN)!.dates)
         .FirstOrDefault(o => o.OrdinationId == id);
 
+        //exception for checking the id for the specified ordination exists
         if (ordination == null)
         {
             return $"Ordination with ID {id} does not exist.";
         }
 
-        // Check if the date is within the valid range
+        //exception for checking the date is within the valid range
         if (dato.dato < ordination.startDen || dato.dato > ordination.slutDen)
         {
             return $"Date {dato} is outside the valid period for this ordination.";
@@ -250,7 +252,7 @@ public class DataService
             var patient = db.Patienter.FirstOrDefault(p => p.PatientId == patientId);
             var laegemiddel = db.Laegemiddler.FirstOrDefault(l => l.LaegemiddelId == laegemiddelId);
 
-            // Calculate 
+            //calculating the recc dosis based on the formula that we were given
             if (patient.vaegt < 25)
             {
                 return patient.vaegt * laegemiddel.enhedPrKgPrDoegnLet;
