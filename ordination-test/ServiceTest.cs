@@ -21,6 +21,47 @@ public class ServiceTest
         service.SeedData();
     }
 
+    //sum
+    //valid, null or invalid ordination 
+    [TestMethod]
+    public void InvalidOrdinationType()
+    {
+        var ordinationType = OrdinationType.DagligSkaev; 
+        var invalidType = (OrdinationType)999; 
+
+        var result = service.GetPNs().FirstOrDefault(pn => pn.getType() == invalidType.ToString()); 
+
+        // Assert
+        Assert.IsNull(result, "Fejlbesked: ordination findes ikke"); 
+    }
+
+    [TestMethod]
+    public void ValidOrdinationType()
+    {
+        var ordinationType = OrdinationType.PN; 
+
+        var result = service.GetPNs().FirstOrDefault(pn => pn.getType() == ordinationType.ToString()); 
+
+        // Assert
+        Assert.IsNotNull(result, "Ordination bør være fundet"); 
+        Assert.AreEqual(ordinationType.ToString(), result.getType(), "Ordination type should match the input.");
+    }
+
+    [TestMethod]
+    public void NullOrdinationType()
+    {
+
+        var invalidPN = new PN();
+
+        // Act
+        var result = service.GetPNs().FirstOrDefault(pn => pn.getType() == null);
+
+        // Assert
+        Assert.IsNull(result, "Ordination med null type bør ikke kunne findes.");
+    }
+
+
+    //sum
     //invalid or valid patient tests
     [TestMethod]
     public void PatientsExist()
@@ -44,6 +85,24 @@ public class ServiceTest
         Patient result = null;
 
         Assert.IsNull(result, "Patient input should be null.");
+    }
+
+    //sum
+    //valid, null or invalid medication type
+    //missing invalid and null
+    [TestMethod]
+    public void OpretPN_WithValidMedication()
+    {
+        var patientId = 1; //valid patient id
+        var medicationId = 1; //valid id
+        var amount = 1;
+        var startDate = DateTime.Now;
+        var endDate = DateTime.Now.AddDays(1);
+
+        var result = service.OpretPN(patientId, medicationId, amount, startDate, endDate);
+
+        Assert.IsNotNull(result, "Result should not be null for valid medication.");
+        Assert.AreEqual(medicationId, result.laegemiddel.LaegemiddelId, "The medication ID should match the input.");
     }
 
 
@@ -188,6 +247,7 @@ public class ServiceTest
 
     }
 
+    //sum
     //invalid or valid start date and end date
     [TestMethod]
     public void ValidSingleDayRange()
