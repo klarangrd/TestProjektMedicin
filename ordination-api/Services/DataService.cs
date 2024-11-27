@@ -177,9 +177,29 @@ public class DataService
         double antalMorgen, double antalMiddag, double antalAften, double antalNat, 
         DateTime startDato, DateTime slutDato) {
 
+
+
+        //exception to check whether the antal is within the accepted range
+        var døgnDosis = antalMorgen + antalMiddag + antalAften + antalNat;
+        if ( døgnDosis < 0)
+        {
+            throw new ArgumentException("Enhed kan ikke være negativ.");
+        }
+        if (døgnDosis == 0)
+        {
+            throw new ArgumentException("Enhed skal være angivet");
+        }
         // TODO: Implement!
         var patient = db.Patienter.Include(p => p.ordinationer).FirstOrDefault(p => p.PatientId == patientId);
         var laegemiddel = db.Laegemiddler.FirstOrDefault(l => l.LaegemiddelId == laegemiddelId);
+
+        double anbefaletDosis = GetAnbefaletDosisPerDøgn(patientId, laegemiddelId);
+
+        //exception to check whether the antal is within the anbefaletdosis
+        if (døgnDosis > anbefaletDosis)
+        {
+            throw new ArgumentException("Enhed har overskrevet anbefalet dosis");
+        }
 
         var dagligFast = new DagligFast(startDato, slutDato, laegemiddel, antalMorgen, antalMiddag, antalAften, antalNat);
 
