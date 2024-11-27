@@ -61,7 +61,7 @@ public class ServiceTest
         // Act
         var pn = service.OpretPN(patient.PatientId, lm.LaegemiddelId, TC1antal, startDato, slutDato);
 
-    
+
     }
 
     [TestMethod]
@@ -124,7 +124,7 @@ public class ServiceTest
         // Arrange
         Patient patient = service.GetPatienter().First();
         Laegemiddel lm = service.GetLaegemidler().First();
-       
+
         DateTime startDato = new DateTime(2024, 11, 1);
         DateTime slutDato = new DateTime(2024, 11, 5);
 
@@ -170,9 +170,9 @@ public class ServiceTest
         Patient patient = service.GetPatienter().First();
         Laegemiddel lm = service.GetLaegemidler().First();
 
-        double morgenAntal = 2; 
-        double middagAntal = 2; 
-        double aftenAntal = 1;  
+        double morgenAntal = 2;
+        double middagAntal = 2;
+        double aftenAntal = 1;
         double natAntal = 0;
 
         double DagligDose = morgenAntal + middagAntal + aftenAntal + natAntal;
@@ -228,14 +228,7 @@ public class ServiceTest
         Assert.AreEqual(new DateTime(2024, 11, 26), result.slutDen);
     }
 
-       
-
-
-
-
-    /*[TestMethod]
-    [ExpectedException(typeof(ArgumentNullException))]
-    public void TestAtKodenSmiderEnException()
+    [TestMethod]
     [ExpectedException(typeof(ArgumentException), "Enhed har overskrevet anbefalet dosis")]
     public void OpretDagligDose_ThrowsException_WhenDoseExceedsRecommended()
     {
@@ -263,5 +256,4 @@ public class ServiceTest
         service.OpretDagligFast(patient.PatientId, laegemiddel.LaegemiddelId,
             morgenAntal, middagAntal, aftenAntal, natAntal, startDato, slutDato);
     }
-
 }
