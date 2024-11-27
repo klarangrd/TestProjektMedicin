@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Service;
 using Data;
 using shared.Model;
+using static shared.Util;
 
 [TestClass]
 public class ServiceTest
@@ -187,6 +188,107 @@ public class ServiceTest
         Assert.AreEqual(DagligDose, service.GetDagligFaste().Last().doegnDosis()); // Daglige dosis = forvetnted dosis
 
     }
+    [TestMethod]
+    [ExpectedException(typeof(ArgumentException), "Enhed har overskrevet anbefalet dosis")]
+    public void OpretDagligDose_ThrowsException_WhenDoseExceedsRecommended()
+    {
+
+        var patient = service.GetPatienter().First(); // Get a valid patient
+        var laegemiddel = service.GetLaegemidler().First(); // Get a valid medication
+
+        // Calculate the recommended daily dose
+        double anbefaletDosis = service.GetAnbefaletDosisPerDøgn(patient.PatientId, laegemiddel.LaegemiddelId);
+
+        // Create dose inputs that exceed the recommended daily dose
+        double morgenAntal = anbefaletDosis / 2;
+        double middagAntal = anbefaletDosis / 2;
+        double aftenAntal = 1; // Exceed the limit by adding extra dose
+        double natAntal = 0;
+
+        double DagligDose = morgenAntal + middagAntal + aftenAntal + natAntal;
+
+        Assert.IsTrue(DagligDose > anbefaletDosis, "DagligDose should exceed anbefaletDosis for this test.");
+
+        DateTime startDato = DateTime.Today;
+        DateTime slutDato = DateTime.Today.AddDays(3);
+
+        // Act
+        service.OpretDagligFast(patient.PatientId, laegemiddel.LaegemiddelId,
+            morgenAntal, middagAntal, aftenAntal, natAntal, startDato, slutDato);
+    }
+
+    [TestMethod]
+    [ExpectedException(typeof(ArgumentException))]
+    public void OpretDagligSkæv_ThrowsException_ForNegativeAntal()
+    {
+        // Arrange
+        Patient patient = service.GetPatienter().First();
+        Laegemiddel lm = service.GetLaegemidler().First();
+
+        DateTime startDato = new DateTime(2024, 11, 1);
+        DateTime slutDato = new DateTime(2024, 11, 5);
+
+        // Create the Dosis objects, including one with a negative value for antal
+        Dosis[] doser = new Dosis[]
+    {
+        new Dosis(CreateTimeOnly(12, 0, 0), 0.5),   // Valid dose
+        new Dosis(CreateTimeOnly(12, 40, 0), 1),    // Valid dose
+        new Dosis(CreateTimeOnly(16, 0, 0), -2.5)   // Invalid negative dose
+    };
+
+        // Act - try to create DagligSkæv, should throw an exception
+        service.OpretDagligSkaev(patient.PatientId, lm.LaegemiddelId, doser, startDato, slutDato);
+    }
+    [TestMethod]
+    [ExpectedException(typeof(ArgumentException))]
+    public void OpretDagligSkæv_ThrowsException_ForZero()
+    {
+        // Arrange
+        Patient patient = service.GetPatienter().First();
+        Laegemiddel lm = service.GetLaegemidler().First();
+
+        DateTime startDato = new DateTime(2024, 11, 1);
+        DateTime slutDato = new DateTime(2024, 11, 5);
+
+        // Create the Dosis objects, including one with a negative value for antal
+        Dosis[] doser = new Dosis[]
+    {
+        new Dosis(CreateTimeOnly(12, 0, 0), 0),   
+        new Dosis(CreateTimeOnly(12, 40, 0), 0),    
+        new Dosis(CreateTimeOnly(16, 0, 0), 0)   
+    };
+
+        // Act - try to create DagligSkæv, should throw an exception
+        service.OpretDagligSkaev(patient.PatientId, lm.LaegemiddelId, doser, startDato, slutDato);
+    }
+    [TestMethod]
+
+    public void OpretDagligSkæv()
+    {
+        // Arrange
+        Patient patient = service.GetPatienter().First();
+        Laegemiddel lm = service.GetLaegemidler().First();
+
+        DateTime startDato = new DateTime(2024, 11, 1);
+        DateTime slutDato = new DateTime(2024, 11, 5);
+
+        // Create the Dosis objects, including one with a negative value for antal
+        Dosis[] doser = new Dosis[]
+    {
+        new Dosis(CreateTimeOnly(12, 0, 0), 1),   // Valid dose
+        new Dosis(CreateTimeOnly(12, 40, 0), 0),    // Valid dose
+        new Dosis(CreateTimeOnly(16, 0, 0), 0)  // Valid dose
+    };
+
+        // Act
+        service.OpretDagligSkaev(patient.PatientId, lm.LaegemiddelId, doser, startDato, slutDato);
+
+       
+
+
+    }
+
+
 
     //invalid or valid start date and end date
     [TestMethod]
@@ -228,32 +330,5 @@ public class ServiceTest
         Assert.AreEqual(new DateTime(2024, 11, 26), result.slutDen);
     }
 
-    [TestMethod]
-    [ExpectedException(typeof(ArgumentException), "Enhed har overskrevet anbefalet dosis")]
-    public void OpretDagligDose_ThrowsException_WhenDoseExceedsRecommended()
-    {
-
-        var patient = service.GetPatienter().First(); // Get a valid patient
-        var laegemiddel = service.GetLaegemidler().First(); // Get a valid medication
-
-        // Calculate the recommended daily dose
-        double anbefaletDosis = service.GetAnbefaletDosisPerDøgn(patient.PatientId, laegemiddel.LaegemiddelId);
-
-        // Create dose inputs that exceed the recommended daily dose
-        double morgenAntal = anbefaletDosis / 2;
-        double middagAntal = anbefaletDosis / 2;
-        double aftenAntal = 1; // Exceed the limit by adding extra dose
-        double natAntal = 0;
-
-        double DagligDose = morgenAntal + middagAntal + aftenAntal + natAntal;
-
-        Assert.IsTrue(DagligDose > anbefaletDosis, "DagligDose should exceed anbefaletDosis for this test.");
-
-        DateTime startDato = DateTime.Today;
-        DateTime slutDato = DateTime.Today.AddDays(3);
-
-        // Act
-        service.OpretDagligFast(patient.PatientId, laegemiddel.LaegemiddelId,
-            morgenAntal, middagAntal, aftenAntal, natAntal, startDato, slutDato);
-    }
+   
 }

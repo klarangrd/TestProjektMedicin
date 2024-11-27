@@ -213,8 +213,30 @@ public class DataService
 
     public DagligSkæv OpretDagligSkaev(int patientId, int laegemiddelId, Dosis[] doser, DateTime startDato, DateTime slutDato) {
         // TODO: Implement!
+        double total = 0;
+        foreach (Dosis d in doser)
+        {
+            total += d.antal;
+        }
+        if (total < 0)
+        {
+            throw new ArgumentException("Enhed kan ikke være negativ.");
+        }
+        if (total == 0)
+        {
+            throw new ArgumentException("Enhed skal være angivet");
+        }
+
         var patient = db.Patienter.Include(p => p.ordinationer).FirstOrDefault(p => p.PatientId == patientId);
         var laegemiddel = db.Laegemiddler.FirstOrDefault(l => l.LaegemiddelId == laegemiddelId);
+
+        double anbefaletDosis = GetAnbefaletDosisPerDøgn(patientId, laegemiddelId);
+
+        //exception to check whether the antal is within the anbefaletdosis
+        if (total > anbefaletDosis)
+        {
+            throw new ArgumentException("Enhed har overskrevet anbefalet dosis");
+        }
 
         var dagligSkæv = new DagligSkæv(startDato, slutDato, laegemiddel, doser);
                
