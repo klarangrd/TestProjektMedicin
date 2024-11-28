@@ -341,12 +341,33 @@ public class ServiceTest
 
         // Act
         service.OpretDagligSkaev(patient.PatientId, lm.LaegemiddelId, doser, startDato, slutDato);
-
-       
-
-
     }
 
+    [TestMethod]
+    [ExpectedException(typeof(ArgumentException), "Enhed har overskrevet anbefalet dosis")]
+    public void OpretDagligSkæv_ThrowsException_ForExceedingAnbefaletDosis()
+    {
+        // Arrange
+        Patient patient = service.GetPatienter().First();
+        Laegemiddel lm = service.GetLaegemidler().First();
+
+        DateTime startDato = new DateTime(2024, 11, 1);
+        DateTime slutDato = new DateTime(2024, 11, 5);
+
+        // Get the recommended daily dose
+        double anbefaletDosis = service.GetAnbefaletDosisPerDøgn(patient.PatientId, lm.LaegemiddelId);
+
+        // Create doses that collectively exceed the recommended daily dose
+        Dosis[] doser = new Dosis[]
+        {
+        new Dosis(CreateTimeOnly(12, 0, 0), anbefaletDosis / 2),
+        new Dosis(CreateTimeOnly(12, 40, 0), anbefaletDosis / 2),
+        new Dosis(CreateTimeOnly(16, 0, 0), 1) // Exceeds the limit
+        };
+
+        // Act
+        service.OpretDagligSkaev(patient.PatientId, lm.LaegemiddelId, doser, startDato, slutDato);
+    }
 
 
     //sum
