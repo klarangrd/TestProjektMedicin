@@ -106,6 +106,24 @@ public class ServiceTest
         Assert.AreEqual(medicationId, result.laegemiddel.LaegemiddelId, "The medication ID should match the input.");
     }
 
+    [TestMethod]
+    [ExpectedException(typeof(ArgumentException))]
+    public void InvalidMedicationNull()
+    {
+        var patient = service.GetPatienter().First();
+
+        Laegemiddel laegemiddel = null;
+
+        service.OpretDagligFast(
+            patient.PatientId,
+            laegemiddel?.LaegemiddelId ?? 0, 
+            2, 2, 1, 0,  
+            new DateTime(2024, 11, 29),  
+            new DateTime(2024, 11, 30)  
+        );
+    }
+
+
 
     [TestMethod]
     [ExpectedException(typeof(ArgumentException))]
@@ -373,24 +391,58 @@ public class ServiceTest
     //sum
     //invalid or valid start date and end date
     [TestMethod]
+    [ExpectedException(typeof(ArgumentException))]
+    public void OpretDagligFast_ThrowsException_WhenEndDateBeforeStartDate()
+    {
+        var patient = service.GetPatienter().First();
+        var laegemiddel = service.GetLaegemidler().First();
+
+        DateTime invalidStartDate = new DateTime(2024, 12, 10);
+        DateTime invalidEndDate = new DateTime(2024, 12, 5); //ivalid end date before start date
+
+        double morgenAntal = 1, middagAntal = 1, aftenAntal = 1, natAntal = 1;
+
+        service.OpretDagligFast(patient.PatientId, laegemiddel.LaegemiddelId, morgenAntal, middagAntal, aftenAntal, natAntal, invalidStartDate, invalidEndDate);
+    }
+
+    [TestMethod]
+    [ExpectedException(typeof(ArgumentException))]
+    public void InvalidDateRange_EndDateBeforeStartDate()
+    {
+        var patient = service.GetPatienter().First();
+        var laegemiddel = service.GetLaegemidler().First();
+
+        service.OpretDagligFast(
+            patient.PatientId,
+            laegemiddel.LaegemiddelId,
+            2, 2, 1, 0,  // Example doses
+            new DateTime(2024, 11, 30),  // Start date
+            new DateTime(2024, 11, 29)   // End date (before start date)
+        );
+
+      
+    }
+
+
+    [TestMethod]
     public void ValidSingleDayRange()
     {
         var patient = service.GetPatienter().First();
         var laegemiddel = service.GetLaegemidler().First();
 
-        //dummy data
         var result = service.OpretDagligFast(
             patient.PatientId,
             laegemiddel.LaegemiddelId,
-            2, 2, 1, 0,
-            new DateTime(2024, 11, 22),  // Start and End date are the same
-            new DateTime(2024, 11, 22)
+            2, 2, 1, 0,  
+            new DateTime(2024, 11, 29),  
+            new DateTime(2024, 11, 29)
         );
 
-        //is date in rage?
-        Assert.AreEqual(new DateTime(2024, 11, 22), result.startDen);
-        Assert.AreEqual(new DateTime(2024, 11, 22), result.slutDen);
+        Assert.AreEqual(new DateTime(2024, 11, 29), result.startDen);
+        Assert.AreEqual(new DateTime(2024, 11, 29), result.slutDen);
     }
+
+
 
     [TestMethod]
     public void ValidDateRange()
